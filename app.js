@@ -12,8 +12,11 @@ connectToBD();
 const app = express();
 // app.use(cors());
 app.use(cors({
-    origin: 'http://localhost:3000', // ✅ Replace with your frontend URL
-    credentials: true  // ✅ Allow sending cookies
+    origin: [
+        'http://localhost:3000',
+        'https://school-web-client.vercel.app'
+    ],
+    credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

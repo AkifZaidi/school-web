@@ -1,0 +1,13 @@
+[workflows]
+runButton = "Run Backend"
+
+[[workflows.workflow]]
+name = "Run Backend"
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node backend/service.js"
+
+[nix]
+channel = "stable-25_05"
