@@ -11,7 +11,6 @@ const sessionRoutes = require("./routes/sessionRoute")
 connectToBD();
 const app = express();
 // app.use(cors());
-const cors = require("cors");
 
 const allowedOrigins = [
     "http://localhost:3000",

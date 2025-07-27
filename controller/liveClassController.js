@@ -3,39 +3,52 @@ const { validationResult } = require('express-validator');
 
 module.exports.createLiveClass = async (req, res) => {
     try {
-        // 🟢 Check for validation errors
+        // ✅ Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
 
         const { meetLink } = req.body;
+
         if (!meetLink) {
             return res.status(400).json({ message: "Meet link is required" });
         }
 
-        // 🟢 Validate Google Meet Link Before Saving
+        const cleanLink = meetLink.trim();
+
+        // ✅ Validate Google Meet Link format
         const googleMeetRegex = /^https:\/\/meet\.google\.com\/[a-zA-Z0-9-]+$/;
-        if (!googleMeetRegex.test(meetLink)) {
-            return res.status(400).json({ message: "Invalid Google Meet link. Use a valid format like 'https://meet.google.com/xyz-abc-def'" });
+        if (!googleMeetRegex.test(cleanLink)) {
+            return res.status(400).json({
+                message: "Invalid Google Meet link. Use a valid format like 'https://meet.google.com/xyz-abc-def'"
+            });
         }
 
-        // 🟢 Save or Update the latest live class link
-        let existingLiveClass = await liveClassModel.findOne();
+        // ✅ Check if same link already exists
+        const existingLiveClass = await liveClassModel.findOne();
+        if (existingLiveClass && existingLiveClass.meetLink === cleanLink) {
+            return res.status(400).json({
+                message: "This Google Meet link is already active. Please end the current class before adding the same link again."
+            });
+        }
+
+        // ✅ Update or create new record
         if (existingLiveClass) {
-            existingLiveClass.meetLink = meetLink;
+            existingLiveClass.meetLink = cleanLink;
             await existingLiveClass.save();
         } else {
-            const newLiveClass = new liveClassModel({ meetLink });
+            const newLiveClass = new liveClassModel({ meetLink: cleanLink });
             await newLiveClass.save();
         }
 
-        res.status(201).json({ message: "Live Class created successfully", meetLink });
+        res.status(201).json({ message: "Live Class created successfully", meetLink: cleanLink });
     } catch (error) {
         console.error("❌ Error in createLiveClass:", error);
         res.status(500).json({ message: "Server Error" });
     }
 };
+
 
 // 🟢 Fetch latest meet link
 module.exports.getLatestLiveClass = async (req, res) => {
