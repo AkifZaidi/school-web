@@ -11,12 +11,26 @@ const sessionRoutes = require("./routes/sessionRoute")
 connectToBD();
 const app = express();
 // app.use(cors());
+const cors = require("cors");
+
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://school-web-client.vercel.app"
+];
+
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'https://school-web-client.vercel.app'
-    ],
-    credentials: true
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like Postman or curl)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.log("Blocked CORS request from:", origin);
+            callback(new Error("CORS not allowed for this origin"));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
